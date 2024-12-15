@@ -1,0 +1,40 @@
+//#include <LCD-I2C.h>
+#include <Wire.h>
+#include "menerimaData.h"
+
+
+//LCD_I2C lcd(0x27, 16,2);
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+//    lcd.begin();
+//    lcd.display();
+//    lcd.backlight();
+}
+
+void loop() {
+
+  float data;
+  
+  menerima(&data);
+
+  if (data>50){
+
+    digitalWrite(LED_BUILTIN, HIGH);
+    Serial.println("Masuk sini");
+    
+  }else{
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+    
+
+    
+    Serial.print("Data yang diterima dari Python: ");
+    Serial.println(data);
+//    lcd.clear();
+//    lcd.print("test");
+//    lcd.setCursor(0,0);
+
+    delay(500);
+}
