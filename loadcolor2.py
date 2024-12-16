@@ -16,14 +16,14 @@ def detect_color(frame, colors):
 
 def main():
     colors = {
-        "biru": (np.load('/home/zin/oprec-roboticsas-2024/blue_low.npy'), np.load('/home/zin/oprec-roboticsas-2024/blue_high.npy')),
+        # "biru": (np.load('/home/zin/oprec-roboticsas-2024/blue_low.npy'), np.load('/home/zin/oprec-roboticsas-2024/blue_high.npy')),
         "merah": (np.load('/home/zin/mikom/red_low.npy'), np.load('/home/zin/mikom/red_high.npy')),
         "hijau": (np.load('/home/zin/mikom/green_low.npy'), np.load('/home/zin/mikom/green_high.npy')),
     }
 
     camera = cv2.VideoCapture(0)
     if not camera.isOpened():
-        print("Raspicam Gagal!")
+        print("gagal")
         return
 
     while True:
