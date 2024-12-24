@@ -35,7 +35,7 @@ def main():
         detect_color(frame, colors)
         frameBlur = cv2.GaussianBlur(frame, (7, 7), 1) 
         frameCanny = cv2.Canny(frameBlur, 50, 70)
-        cv2.imshow("Hasilnya cuy", frame)
+        cv2.imshow("Hasilnya", frame)
 
         # Tekan 'q' untuk keluar
         if cv2.waitKey(1) & 0xFF == ord("q"):

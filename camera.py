@@ -13,6 +13,10 @@ def main():
             print("frame gagal")
             break
 
+        width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        print(f"Resolusi: {width}x{height}")
+
         cv2.imshow("ini frame", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):

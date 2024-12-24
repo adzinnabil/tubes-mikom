@@ -35,9 +35,6 @@ def main(cam):
         low = get_lower_bgr()
         high = get_upper_bgr()
 
-
-
-
         thresh = cv2.inRange (frame,low,high)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5))
@@ -47,8 +44,8 @@ def main(cam):
         lower = np.array([low])
         upper = np.array([high])
 
-        np.save('green_low.npy', lower)
-        np.save('green_high.npy', upper)
+        np.save('coba_low.npy', lower)
+        np.save('coba2_high.npy', upper)
 
         contour,_ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contour:
@@ -56,6 +53,7 @@ def main(cam):
 
             x,y,w,h =cv2.boundingRect(largest_contour)
             cv2.rectangle(frame,(x, y), (w+x, h+y), (255,0,0),2)
+            cv2.putText(frame,"blue",(x+(w//2)-10, y+(h//2)-10),cv2.FONT_HERSHEY_COMPLEX, 0.7 , (0,0,0), 2 )
 
         # cv2.imshow("hsv", hsv)
         cv2.imshow("thresh", thresh)
