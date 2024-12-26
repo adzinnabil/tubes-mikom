@@ -60,8 +60,8 @@ def main(cam):
         # Save lower and upper bounds to .npy files
         lower = np.array([low])
         upper = np.array([high])
-        np.save('green_low.npy', lower)
-        np.save('green_high.npy', upper)
+        np.save('hai_low.npy', lower)
+        np.save('hai_high.npy', upper)
 
         # Find contours
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

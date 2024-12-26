@@ -39,11 +39,11 @@ def detect_color(frame, colors):
     if detected_color and current_time - last_detected[detected_color] >= 2:
         command = None
         if detected_color == "merah":
-            command = "1"  # Maju
+            command = "1"  
         elif detected_color == "biru":
-            command = "2"  # Kanan
+            command = "2"  
         elif detected_color == "hijau":
-            command = "3"  # Mundur
+            command = "3"  
         
         if command and command != current_command:
             write_to_serial(command)
@@ -56,7 +56,7 @@ def main():
         "hijau": (np.load('/home/zin/mikom/green_low.npy'), np.load('/home/zin/mikom/green_high.npy')),
     }
 
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(0,cv2.CAP_V4L2)
     if not camera.isOpened():
         print("Gagal membuka kamera")
         return
@@ -68,8 +68,8 @@ def main():
             break
 
         detect_color(frame, colors)
-        frameBlur = cv2.GaussianBlur(frame, (7, 7), 1) 
-        frameCanny = cv2.Canny(frameBlur, 50, 70)
+        # frameBlur = cv2.GaussianBlur(frame, (7, 7), 1) 
+        # frameCanny = cv2.Canny(frameBlur, 50, 70)
         cv2.imshow("Hasilnya", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
