@@ -2,12 +2,12 @@ import cv2
 import numpy as np
 import serial
 import time
-import RPi.GPIO as GPIO  # Untuk sensor ultrasonik pada Raspberry Pi
+import RPi.GPIO as GPIO  
 
-# Inisialisasi serial
+
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
 
-# Konfigurasi pin sensor ultrasonik
+# pin sensor ultrasonik
 TRIG_PIN = 23
 ECHO_PIN = 24
 
@@ -21,7 +21,7 @@ def write_to_serial(value):
     response = arduino.readline().decode('utf-8').strip()
     print(f"Command sent: {value}, Response: {response}")
 
-# Fungsi untuk membaca jarak dari sensor ultrasonik
+
 def read_distance():
     GPIO.output(TRIG_PIN, False)
     time.sleep(0.05)
@@ -36,10 +36,10 @@ def read_distance():
         pulse_end = time.time()
 
     pulse_duration = pulse_end - pulse_start
-    distance = pulse_duration * 17150  # Konversi ke cm
+    distance = pulse_duration * 17150  
     return round(distance, 2)
 
-# Variabel untuk mencatat status deteksi
+
 last_detected = {"merah": 0, "biru": 0, "hijau": 0}
 current_command = None
 
@@ -62,12 +62,12 @@ def detect_color(frame, colors):
             detected_color = color_name
             last_detected[color_name] = current_time
 
-    # Periksa jarak dengan sensor ultrasonik
+   
     distance = read_distance()
     print(f"Jarak: {distance} cm")
 
-    # Periksa apakah warna tetap terdeteksi selama 2 detik dan dalam jarak tertentu
-    if detected_color and current_time - last_detected[detected_color] >= 2 and distance <= 20:
+    
+    if detected_color and current_time - last_detected[detected_color] >= 2 and distance <= 10:
         command = None
         if detected_color == "merah":
             command = "1"  # Maju
@@ -76,7 +76,6 @@ def detect_color(frame, colors):
         elif detected_color == "hijau":
             command = "3"  # Mundur
         
-        # Kirim perintah hanya jika berbeda dari perintah terakhir
         if command and command != current_command:
             write_to_serial(command)
             current_command = command
@@ -105,14 +104,13 @@ def main():
             frameCanny = cv2.Canny(frameBlur, 50, 70)
             cv2.imshow("Hasilnya", frame)
 
-            # Tekan 'q' untuk keluar
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
     finally:
         camera.release()
         cv2.destroyAllWindows()
-        GPIO.cleanup()  # Pastikan GPIO di-reset
+        GPIO.cleanup()  
 
 if __name__ == "__main__":
     main()
