@@ -1,7 +1,7 @@
 import cv2
 
 def main():
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(0, cv2.CAP_V4L2)
     if not camera.isOpened():
         print("kamera gagal")
         return
