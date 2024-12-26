@@ -15,16 +15,22 @@ def detect_color(frame, colors):
             cv2.putText(frame, color_name, (x + (w // 2) - 10, y + (h // 2) - 10), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 0), 2)
 
 def main():
+    # Load saved color ranges
     colors = {
-        "biru": (np.load('/home/mikom/tubes-mikom/blue_low.npy'), np.load('/home/mikom/tubes-mikom/blue_high.npy')),
+       "biru": (np.load('/home/mikom/tubes-mikom/blue_low.npy'), np.load('/home/mikom/tubes-mikom/blue_high.npy')),
         "merah": (np.load('/home/mikom/tubes-mikom/red_low.npy'), np.load('/home/mikom/tubes-mikom/red_high.npy')),
         "hijau": (np.load('/home/mikom/tubes-mikom/green_low.npy'), np.load('/home/mikom/tubes-mikom/green_low.npy')),
     }
 
-    camera = cv2.VideoCapture(0,cv2.CAP_V4L2)
+    # Initialize camera
+    camera = cv2.VideoCapture(0, cv2.CAP_V4L2)
     if not camera.isOpened():
-        print("gagal")
+        print("Gagal membuka kamera")
         return
+
+    # Crop dimensions
+    lebar_crop = 400
+    tinggi_crop = 360
 
     while True:
         ret, frame = camera.read()
@@ -32,12 +38,29 @@ def main():
             print("Gagal membaca frame dari kamera")
             break
 
-        detect_color(frame, colors)
-        frameBlur = cv2.GaussianBlur(frame, (7, 7), 1) 
-        frameCanny = cv2.Canny(frameBlur, 50, 70)
-        cv2.imshow("Hasilnya cuy", frame)
+        # Get frame dimensions
+        frame_height, frame_width, _ = frame.shape
 
-        # Tekan 'q' untuk keluar
+        # Crop frame to center
+        x_start = (frame_width - lebar_crop) // 4
+        x_end = x_start + lebar_crop
+        y_start = (frame_height - tinggi_crop) // 4
+        y_end = y_start + tinggi_crop
+        cropped_frame = frame[y_start:y_end, x_start:x_end]
+
+        # Detect colors in cropped frame
+        detect_color(cropped_frame, colors)
+
+        # Optional: Apply Gaussian Blur and Canny Edge Detection
+        frame_blur = cv2.GaussianBlur(cropped_frame, (7, 7), 1)
+        frame_canny = cv2.Canny(frame_blur, 50, 70)
+
+        # Display frames
+        cv2.imshow("Hasil Cropped Frame", cropped_frame)
+        cv2.imshow("Gaussian Blur", frame_blur)
+        cv2.imshow("Canny Edges", frame_canny)
+
+        # Break loop if 'q' is pressed
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
