@@ -4,8 +4,8 @@ import picamera
 import picamera.array
 
 def main():
-    with picamera.PICamera() as camera:
-        camera.resolution = (640, 480)
+    with picamera.PiCamera() as camera:
+        camera.resolution = (640,480)
         
         with picamera.array.PiRGBArray(camera) as output:
             while True:

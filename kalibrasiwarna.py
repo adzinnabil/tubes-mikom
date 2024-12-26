@@ -65,5 +65,10 @@ def main(cam):
 
 if __name__ == "__main__":
     init_trackbars()
+<<<<<<< HEAD
     camera = cv2.VideoCapture(5)
     main(camera)
+=======
+    camera = cv2.VideoCapture(1)
+    main(camera)
+>>>>>>> 851f70dfa5b9faaf82749c57b889f95ba3e86ddd
