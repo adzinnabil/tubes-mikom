@@ -45,7 +45,7 @@ def main(cam):
         y_start = (frame_height - tinggi_crop) // 4
         y_end = y_start + tinggi_crop
 
-        # Crop frame
+        
         cropped_frame = frame[y_start:y_end, x_start:x_end]
 
         # Get lower and upper BGR values
@@ -60,8 +60,8 @@ def main(cam):
         # Save lower and upper bounds to .npy files
         lower = np.array([low])
         upper = np.array([high])
-        np.save('hai_low.npy', lower)
-        np.save('hai_high.npy', upper)
+        np.save('blue_low.npy', lower)
+        np.save('blue_high.npy', upper)
 
         # Find contours
         contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
