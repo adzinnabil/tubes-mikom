@@ -54,14 +54,14 @@ void ke_kiri() {
 
     digitalWrite(HighR, LOW);
     digitalWrite(LowR, HIGH);
-    analogWrite(EnableR, 60);
+    analogWrite(EnableR, 90);
     delay(1000);
 }
 
 void ke_kanan() {
     digitalWrite(HighL, LOW);
     digitalWrite(LowL, HIGH);
-    analogWrite(EnableL, 60);
+    analogWrite(EnableL, 90);
 
     digitalWrite(HighR, LOW);
     digitalWrite(LowR, HIGH);
