@@ -42,9 +42,9 @@ def main():
         frame_height, frame_width, _ = frame.shape
 
         # Crop frame to center
-        x_start = (frame_width - lebar_crop) // 4
+        x_start = (frame_width - lebar_crop) // 2
         x_end = x_start + lebar_crop
-        y_start = (frame_height - tinggi_crop) // 4
+        y_start = (frame_height - tinggi_crop) // 2
         y_end = y_start + tinggi_crop
         cropped_frame = frame[y_start:y_end, x_start:x_end]
 

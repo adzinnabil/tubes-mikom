@@ -1,0 +1,4 @@
+ if command and command != current_command:
+                    print("Ngirim data command:", command)
+                    write_to_serial(command)
+                    current_command = command

@@ -4,7 +4,6 @@ import serial
 import time
 import RPi.GPIO as GPIO  
 
-
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
 
 # pin sensor ultrasonik
@@ -62,11 +61,11 @@ def detect_color(frame, colors):
             detected_color = color_name
             last_detected[color_name] = current_time
 
-   
+    
     distance = read_distance()
+    cv2.putText(frame, f"Jarak: {distance} cm", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
     print(f"Jarak: {distance} cm")
 
-    
     if detected_color and current_time - last_detected[detected_color] >= 2 and distance <= 15:
         command = None
         if detected_color == "merah":
@@ -81,6 +80,7 @@ def detect_color(frame, colors):
             current_command = command
 
 def main():
+    print("Memulai program...")
     colors = {
         "biru": (np.load('/home/mikom/tubes-mikom/blue_low.npy'), np.load('/home/mikom/tubes-mikom/blue_high.npy')),
         "merah": (np.load('/home/mikom/tubes-mikom/red_low.npy'), np.load('/home/mikom/tubes-mikom/red_high.npy')),
@@ -89,8 +89,10 @@ def main():
 
     camera = cv2.VideoCapture(0,cv2.CAP_V4L2)
     if not camera.isOpened():
-        print("Gagal membuka kamera")
+        print("Kamera gagal dibuka")
         return
+    else:
+        print("Kamera berhasil dibuka")
 
     try:
         while True:
@@ -114,3 +116,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
