@@ -7,6 +7,8 @@ import RPi.GPIO as GPIO
 # Inisialisasi komunikasi serial dengan Arduino
 arduino = serial.Serial(port='/dev/ttyUSB0', baudrate=9600, timeout=.1)
 
+command =""
+
 def write_to_serial(value):
     """
     Fungsi untuk mengirim perintah ke Arduino melalui komunikasi serial.
@@ -28,37 +30,44 @@ def measure_distance():
     """
     Fungsi untuk mengukur jarak dengan sensor ultrasonik.
     """
+    # Pastikan TRIG dalam keadaan low
     GPIO.output(TRIG, False)
     time.sleep(0.1)  # Tunggu sensor settle
-
+    
+    # Kirim pulsa 10us ke TRIG
     GPIO.output(TRIG, True)
     time.sleep(0.00001)
     GPIO.output(TRIG, False)
-
+    
+    # Tunggu ECHO high
     while GPIO.input(ECHO) == 0:
         pulse_start = time.time()
-
+    
+    # Tunggu ECHO low
     while GPIO.input(ECHO) == 1:
         pulse_end = time.time()
-
+    
+    # Hitung durasi pulsa
     pulse_duration = pulse_end - pulse_start
+    
+    # Hitung jarak (kecepatan suara = 34300 cm/s)
     distance = pulse_duration * 34300 / 2  # Bagi 2 untuk perjalanan pulang pergi
-
+    
     return round(distance, 2)
 
 # Variabel global
 last_detected_time = 0
 current_command = None
-last_color = None
 
-def detect_color(frame, colors):
-    """
-    Fungsi untuk mendeteksi warna dalam frame kamera.
-    """
+def detect_color(frame, colors, detection_duration=1):
+    global last_detected_time
     detected_color = None
+    current_time = time.time()
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     for color_name, (low, high) in colors.items():
-        thresh = cv2.inRange(frame, low, high)
+        thresh = cv2.inRange(hsv, low, high)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
 
@@ -70,17 +79,42 @@ def detect_color(frame, colors):
             cv2.putText(frame, color_name, (x + (w // 2) - 10, y + (h // 2) - 10), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 0), 2)
             detected_color = color_name
 
-    return detected_color
+    if detected_color:
+        if current_time - last_detected_time >= detection_duration:
+            if detected_color == "merah":
+                command = "1"
+            elif detected_color == "biru":
+                command = "2"
+            elif detected_color == "hijau":
+                command = "3"
+
+            distance = measure_distance()
+            print(f"Jarak terdeteksi: {distance} cm")
+
+            if distance < 70:
+                write_to_serial(command)
+
+        last_detected_time = current_time
+    else:
+        current_command = None
 
 def main():
-    global last_detected_time, current_command, last_color
+    # Memuat batas bawah dan atas warna dari file
+    green_low = np.load('/home/mikom/tubes-mikom/hsvgreen_low.npy')
+    green_high = np.load('/home/mikom/tubes-mikom/hsvgreen_high.npy')
+    red_low = np.load('/home/mikom/tubes-mikom/hsvred_low.npy')
+    red_high = np.load('/home/mikom/tubes-mikom/hsvred_high.npy')
+    blue_low = np.load('/home/mikom/tubes-mikom/hsvblue_low.npy')
+    blue_high = np.load('/home/mikom/tubes-mikom/hsvblue_high.npy')
 
+    # Warna-warna yang akan dideteksi
     colors = {
-        "biru": (np.load('/home/mikom/tubes-mikom/blue_low.npy'), np.load('/home/mikom/tubes-mikom/blue_high.npy')),
-        "merah": (np.load('/home/mikom/tubes-mikom/red_low.npy'), np.load('/home/mikom/tubes-mikom/red_high.npy')),
-        "hijau": (np.load('/home/mikom/tubes-mikom/green_low.npy'), np.load('/home/mikom/tubes-mikom/green_high.npy')),
+        "Green": (green_low, green_high),
+        "Red": (red_low, red_high),
+        "Blue": (blue_low, blue_high)
     }
 
+    # Inisialisasi kamera
     camera = cv2.VideoCapture(0, cv2.CAP_V4L2)
     if not camera.isOpened():
         print("Gagal membuka kamera")
@@ -92,46 +126,37 @@ def main():
             print("Gagal membaca frame dari kamera")
             break
 
-        # Deteksi warna dalam frame
-        detected_color = detect_color(frame, colors)
+        # Mendapatkan ukuran asli frame
+        height, width, _ = frame.shape
 
-        if detected_color:
-            current_time = time.time()
+        # Menghitung koordinat crop agar berada di tengah
+        crop_width = 480
+        crop_height = 480
+        start_x = (width - crop_width) // 2
+        start_y = (height - crop_height) // 2
+        end_x = start_x + crop_width
+        end_y = start_y + crop_height
 
-            if detected_color == last_color:
-                if current_time - last_detected_time >= 2:  # 2 detik
-                    print(f"Warna terdeteksi selama 2 detik: {detected_color}")
+        # Crop frame ke 240x240
+        cropped_frame = frame[start_y:end_y, start_x:end_x]
 
-                    if detected_color == "merah":
-                        command = "1"
-                    elif detected_color == "biru":
-                        command = "2"
-                    elif detected_color == "hijau":
-                        command = "3"
-                    else:
-                        command = None
+        # Menampilkan frame yang sudah di-crop
+        cv2.imshow("Cropped Frame", cropped_frame)
 
-                    if command:
-                        distance = measure_distance()
-                        print(f"Jarak terdeteksi: {distance} cm")
+        # Deteksi warna dalam frame yang sudah di-crop
+        detect_color(cropped_frame, colors)
 
-                        if distance < 70:
-                            write_to_serial(command)
-                            current_command = command
-            else:
-                last_detected_time = current_time
-                last_color = detected_color
-
-        frameBlur = cv2.GaussianBlur(frame, (7, 7), 1)
-        frameCanny = cv2.Canny(frameBlur, 50, 70)
-        cv2.imshow("Hasilnya", frame)
-
+        # Tekan 'q' untuk keluar dari loop
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
+    # Lepaskan kamera dan tutup jendela
     camera.release()
     cv2.destroyAllWindows()
     GPIO.cleanup()
 
 if __name__ == "__main__":
     main()
+
+
+
